@@ -2,13 +2,18 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use App\Repository\HoraireRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+
 #[ORM\Entity(repositoryClass: HoraireRepository::class)]
 #[ApiResource]
+#[ApiFilter(SearchFilter::class, properties: ['nom' => 'exact', 'commentaire' => 'partial', 'dateHeureDebut', 'dateHeureFin', 'dateCreation', 'derniereModification', 'priorite', 'typeHoraire.nom' => 'exact'])]
 class Horaire
 {
     #[ORM\Id]

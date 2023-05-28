@@ -11,7 +11,7 @@ use Faker\Factory;
 
 class HoraireFixtures  extends Fixture implements DependentFixtureInterface
 {
-	 public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager)
     {
         $generator  = Factory::create("fr_FR");
         $typeHoraire = $manager->getRepository(TypeHoraire::class)->findAll();
@@ -21,8 +21,19 @@ class HoraireFixtures  extends Fixture implements DependentFixtureInterface
             $horaire->setNom($generator->name);
             $horaire->setPriorite(rand(0,3));
             $horaire->setTypeHoraire($generator->randomElement($typeHoraire));
-            $horaire->setDateHeureDebut($generator->dateTime);
-			$horaire->setDateHeureFin($generator->dateTime);
+			$dateA = $generator->dateTime;
+			$dateB = $generator->dateTime;
+			if($dateA<$dateB)
+			{
+				$horaire->setDateHeureDebut($dateA);
+				$horaire->setDateHeureFin($dateB);
+			}
+			else
+			{
+				$horaire->setDateHeureDebut($dateB);
+				$horaire->setDateHeureFin($dateA);
+			}
+            
 
             $manager->persist($horaire);
         }
