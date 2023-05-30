@@ -142,6 +142,7 @@
 			datatype: "json",
 			success: function (reponse) {
 				$("#card_"+id).remove();
+				afficherDuree();
 			},
 			error: function (reponse) {
 				alert(JSON.stringify(reponse, null, 2));
@@ -170,6 +171,7 @@
 			datatype: "json",
 			success: function (reponse) {
 				alert("Modification effectuée");
+				afficherDuree();
 			},
 			error: function (reponse) {
 				alert(JSON.stringify(reponse, null, 2));
