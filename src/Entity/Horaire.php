@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HoraireRepository::class)]
 #[ApiResource]
-#[ApiFilter(SearchFilter::class, properties: ['nom' => 'exact', 'commentaire' => 'partial', 'dateHeureDebut', 'dateHeureFin', 'dateCreation', 'derniereModification', 'priorite', 'typeHoraire.nom' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: ['nom', 'commentaire', 'dateHeureDebut', 'dateHeureFin', 'dateCreation', 'derniereModification', 'priorite', 'typeHoraire.nom'])]
 class Horaire
 {
     #[ORM\Id]
@@ -80,7 +80,7 @@ class Horaire
         return $this->dateHeureDebut;
     }
 
-    public function setDateHeureDebut(\DateTimeInterface $dateHeureDebut): self
+    public function setDateHeureDebut(?\DateTimeInterface $dateHeureDebut): self
     {
         $this->dateHeureDebut = $dateHeureDebut;
 
@@ -92,7 +92,7 @@ class Horaire
         return $this->dateHeureFin;
     }
 
-    public function setDateHeureFin(\DateTimeInterface $dateHeureFin): self
+    public function setDateHeureFin(?\DateTimeInterface $dateHeureFin): self
     {
         $this->dateHeureFin = $dateHeureFin;
 

@@ -1,12 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HorairesController!{% endblock %}
+{% block title %}Horaires{% endblock %}
 
 {% block body %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-	
 	hr.solid {
 	  border-top: 1px solid;
 	  margin: 1px;
@@ -15,35 +12,47 @@
 	.widget{
 		padding-right: 16px;
 	}
+	
+	.header{
+		background-color: #0f0e17;
+		color: #fffffe;
+	}
+	
+	.localButton{
+		background-color: #ff8906;
+		color: #fffffe;
+	}
+	
 </style>
 
-
-
-{{ form_start(form, {'action': path('app_list')}) }}
-<div class="w3-container w3-lime w3-text-white">
+<!-- Pour les filtres, nous utiliser un form utilisant les méthodes pré-existantes de twig -->
+<!-- , {'action': path('app_list')} -->
+{{ form_start(form) }}
+<div class="w3-container header">
   <h2 class="w3-center">Filtres : </h2>
   <hr class="solid">
 <div class="w3-container w3-half w3-row">
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.nom) }} : </b><label>
+		<label><b>{{ form_label(form.nom) }} : </br></b></label>
 		{{ form_widget(form.nom) }}
 	  </div>
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.commentaire) }} : </b><label>
+		<label><b>{{ form_label(form.commentaire) }} : </b></label>
 		{{ form_widget(form.commentaire) }}
 	  </div>
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.dateHeureDebut) }} : </b><label>
+		<label><b>{{ form_label(form.dateHeureDebut) }} : </b></label>
 		{{ form_widget(form.dateHeureDebut) }}
 	  </div>
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.dateHeureFin) }} : </b><label>
+		<label><b>{{ form_label(form.dateHeureFin) }} : </b></label>
 		{{ form_widget(form.dateHeureFin) }}
 	  </div>
  </div>
+
  <div class="w3-container w3-half">
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.dateCreation) }} : </b><label>
+		<label><b>{{ form_label(form.dateCreation) }} : </b></label>
 		{{ form_widget(form.dateCreation) }}
 	  </div>
 	  <div class="w3-container w3-quarter">
@@ -51,53 +60,76 @@
 		{{ form_widget(form.derniereModification) }}
 	  </div>
 	  <div class="w3-container w3-quarter">
-		<label><b>{{ form_label(form.priorite) }} : </b><label>
+		<label><b>{{ form_label(form.priorite) }} : </b></label>
 		{{ form_widget(form.priorite) }}
 	  </div>
 	  
 	  <div class="w3-container w3-quarter">
-		<label><b>Type d'horaire</b></label>
+		<label><b>Type d'horaire :</b></label>
 		<select name="{{ field_name(form.typeHoraire) }}" class="form-control">
 			<option value=""></option>
-
 			{% for nom, value in field_choices(form.typeHoraire) %}
-				<option value="{{ value }}">{{ nom }}</option>
+				<option value="{{ value }}" name="{{ value }}">{{ nom }}</option>
 			{% endfor %}
 		</select>
 	  </div>
   </div>
-  
-  <div class="w3-left">
-	<button type="submit" name="button" value="submit" class="btn btn-default">Submit</button>
+ <div class="w3-row">
+ <div class="w3-center w3-container">
+	<div class="w3-third">
+		<div class="w3-left">
+			{{ form_row(form.orderChoice) }}
+		</div>
+		<div class="w3-left">
+			{{ form_row(form.ascOrDesc) }}
+		</div>
+	</div>
+	<div class="w3-third">
+		{{ form_row(form.filterButton,{ 'attr': {'class': 'localButton' }}) }}
+	</div>
+	 
+	<div class="w3-third">
+		{{ form_row(form.addButton,{ 'attr': {'class': 'localButton' }}) }}
+	 </div>
+   </div>
  </div>
- 
 </div>
 
 {{form_end(form) }}
 
-{% if test|default %}
+
+<!-- Pour les modifications/suppressions, nous allons utilser AJAX et faire appel aux API automatiquement créées par API Platform -->
+<!-- Nous aurions pu utiliser des formulaires twig, mais j'ai voulu explorer une méthode différentes, et utiliser les APIs existantes -->
+
+{% if liste|default %}
+	<div class="w3-container w3-center w3-border">
+		<h3>Durée totale : </h3>
+		<h4 id="dureeTotale"></h4>
+	</div>
 	<div class="w3-container">
 		<ul class="w3-ul w3-card-4">
-			{% for horaire in test %}
-				<li class="w3-bar" id="{{horaire.id}}">
+			{% for horaire in liste %}
+				<li class="w3-bar header" id="card_{{horaire.id}}">
 					<span onclick="supprimerHoraire('{{horaire.id}}','{{horaire.nom}}')" class="w3-bar-item w3-button w3-xlarge w3-right w3-red">×</span>
 					
 					<div class="w3-bar-item">
-						<span class="w3-large"><b><input class="w3-text-lime" id="nom_{{ horaire.id }}" value="{{ horaire.nom }}"/></b></span><br>
+						<span class="w3-large"><b><input id="nom_{{ horaire.id }}" value="{{ horaire.nom }}"/></b></span><br>
 						<span id="type_{{ horaire.id }}"><b>Type : {{ horaire.typeHoraire.nom }}</b></span><br>
 						<span>Commentaire : </span><input id="commentaire_{{ horaire.id }}" value="{{ horaire.commentaire }}"/> <br>
-						<span id="dateHeureDebut_{{ horaire.id }}">Début : {{ horaire.dateHeureDebut|date('d/m/Y h:m')}} </span><br>
-						<span id="dateHeureFin_{{ horaire.id }}">Fin : {{ horaire.dateHeureFin|date('d/m/Y h:m')}} </span><br>
-						<span id="dateCreation_{{ horaire.id }}">Créée le : {{ horaire.dateCreation|date('d/m/Y')}} </span><br>
-						<span id="derniereModification_{{ horaire.id }}">Modifiée le : {{ horaire.derniereModification|date('d/m/Y')}} </span><br>
-						<span id="priorite_{{ horaire.id }}">Priorité : {{ horaire.priorite }} </span><br>
-						<span class="w3-bar-item w3-button w3-center w3-green" onclick="modifierHoraire('{{horaire.id}}')">Modifier</span>
+						<span>Début : <input id="dateHeureDebut_{{ horaire.id }}" type="datetime-local" value="{{ horaire.dateHeureDebut|date('Y-m-d\\Th:m')}}"/></span><br>
+						<span>Fin : <input id="dateHeureFin_{{ horaire.id }}" type="datetime-local" value="{{ horaire.dateHeureFin|date('Y-m-d\\Th:m')}}"/></span><br>
+						<span id="{{ horaire.id }}" class="durationDisplay"></span><br>
+						<span>Créée le : {{ horaire.dateCreation|date('Y-m-d')}}</span><br>
+						{% if horaire.derniereModification %} <span>Modifiée le : {{ horaire.derniereModification|date('d/m/Y')}} </span><br> {% endif %}
+						<span >Priorité : <input id="priorite_{{ horaire.id }}" type="number" min="0" max="3" value="{{ horaire.priorite }}"/></span><br>
+						<span class="w3-bar-item w3-button w3-center localButton" onclick="modifierHoraire('{{horaire.id}}')">Modifier</span>
 					</div>
 				</li>
 			{% endfor %}
 		</ul>
 	</div>
 {% endif %}
+
 <script>
 
 	function supprimerHoraire(id, nom){
@@ -109,7 +141,7 @@
 			url: "http://localhost:8000/api/horaires/"+id,
 			datatype: "json",
 			success: function (reponse) {
-				$("#"+id).remove();
+				$("#card_"+id).remove();
 			},
 			error: function (reponse) {
 				alert(JSON.stringify(reponse, null, 2));
@@ -123,9 +155,12 @@
 	{	
 		var data = {
 			"nom" : $("#nom_"+id).val(),
-			"commentaire" : $("#commentaire_"+id).val()
+			"commentaire" : $("#commentaire_"+id).val(),
+			"dateHeureDebut" : $("#dateHeureDebut_"+id).val(),
+			"dateHeureFin" : $("#dateHeureFin_"+id).val(),
+			"priorite" : parseInt($("#priorite_"+id).val())
 		}
-	
+		
 		$.ajax({
 			type: "PATCH",
 			data: JSON.stringify(data),
@@ -142,11 +177,59 @@
 		});
 	}
 	
-	function dureeEnHeures(dateA, dateB)
+	//Plusieurs méthodes possible pour afficher les durées, mais étant donné que la seule utilités des durée est d'être affichée, gérer cela en frontend semble adapté. 
+	function afficherDuree()
 	{
-		var diffEnMillisecondes = Math.abs(new Date(dateB) - new Date(dateA));
-		return Math.ceil(diffEnMillisecondes / (1000 * 60 * 60)); 
+		var deltaTotal = 0;
+		$('.durationDisplay').each(function(i, obj) {
+			var delta = Math.abs(new Date($("#dateHeureFin_"+obj.id).val()) - new Date($("#dateHeureDebut_"+obj.id).val()));
+			deltaTotal += delta;
+			$("#"+obj.id).text("Durée : " + convertirMillisecondes(delta));
+		});
+		
+		$("#dureeTotale").text("Durée : " + convertirMillisecondes(deltaTotal));
 	}
+	
+	function convertirMillisecondes(delta)
+	{
+		delta = delta/1000;
+			
+		var years = Math.floor(delta/(365*86400));
+		delta -= years*(365*86400);
+		
+		var days = Math.floor(delta / 86400);
+		delta -= days * 86400;
+
+		
+		var hours = Math.floor(delta / 3600) % 24;
+		delta -= hours * 3600;
+
+		
+		var minutes = Math.floor(delta / 60) % 60;
+		delta -= minutes * 60;
+
+		
+		var seconds = delta % 60;
+		
+		var Message = "";
+		Message += years>0 ? years+" années, " : "";
+		Message += days>0 ? days+" jours, " : "";
+		Message += hours>0 ? hours+" heures, " : "";
+		Message += minutes>0 ? minutes+" minutes, " : "";
+		Message += seconds>0 ? seconds+" secondes, " : "";
+		
+		Message = Message.substring(0, Message.length - 2);
+		
+		return Message;
+	}
+	
+	{% if liste|default %}
+	
+		$( document ).ready(function() {
+			afficherDuree();
+		});
+	
+	{% endif %}
 </script>
 
 {% endblock %}
